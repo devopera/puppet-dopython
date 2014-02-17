@@ -1,0 +1,133 @@
+class dopython (
+
+  # class arguments
+  # ---------------
+  # setup defaults
+
+  $user = 'web',
+  
+  $version_python_major = '2.7',
+  $version_python_minor = '5',
+  
+  $version_virtualenv = '1.9.1',
+
+  # end of class arguments
+  # ----------------------
+  # begin class
+
+) {
+
+  # install python
+  case $operatingsystem {
+    centos, redhat: {
+      if ($operatingsystemrelease < 7.0) {
+        # compile python from source
+        $python_combined_version = "${version_python_major}.${version_python_minor}"
+        exec { 'python-install-prereqs':
+          command => '/usr/bin/yum install -y "@Development tools" zlib-devel bzip2-devel openssl-devel ncurses-devel python-devel sqlite-devel',
+        }->
+        # fetch, expand and compile, if alias doesn't exist
+        exec { 'python-install-compile':
+          path    => '/usr/bin:/bin',
+          command => "bash -c 'wget http://www.python.org/ftp/python/${python_combined_version}/Python-${python_combined_version}.tar.bz2 -O /tmp/Python-${python_combined_version}.tar.bz2 && cd /tmp && tar -xf Python-${python_combined_version}.tar.bz2 && cd Python-${python_combined_version} && ./configure --prefix=/usr/local --enable-shared && make && make altinstall'",
+          creates => "/tmp/Python-${python_combined_version}",
+          onlyif  => "test ! -e /usr/local/bin/python${version_python_major}",
+        }->
+        # clean up (if we've created a directory/file in /tmp)
+        exec { 'python-install-cleanup':
+          path    => '/usr/bin:/bin',
+          command => 'rm -rf /tmp/Python-*',
+          onlyif  => "test -d /tmp/Python-${python_combined_version}",
+        }->
+        # setup python shared/dynamic library using ldconfig
+        file { 'python-dynamic-lib-dir':
+          name => '/etc/ld.so.conf.d/python-shared-lib.conf',
+          source => 'puppet:///modules/dopython/python-shared-lib.conf',
+          owner => 'root',
+          group => 'root',
+          mode => 0644,
+        }->
+        # make the Dynamic Linker Run Time Bindings reread /etc/ld.so.conf.d
+        exec { 'python-ldconfig':
+          path => '/sbin:/usr/bin:/bin',
+          command => "bash -c 'ldconfig'",
+        }->
+        # consistent resource for later puppet requires
+        file { 'usr-local-python' :
+          path => '/usr/local/bin/python2.7',
+          ensure => present,
+        }
+      }
+    }
+    fedora: {
+      # install python
+      package { 'python-install-prereqs' :
+        name => 'python-devel',
+        ensure => 'present',
+      }->
+      # create local alias for consistency
+      file { 'usr-local-python' :
+        path => "/usr/local/bin/python${version_python_major}",
+        target => "/usr/bin/python${version_python_major}",
+        ensure => link,
+      }
+    }
+    ubuntu, debian: {
+      # install python
+      package { 'python-install-prereqs' :
+        name => 'python-dev',
+        ensure => 'present',
+      }->
+      package { "python${version_python_major}" : }->
+      # create local alias for consistency
+      file { 'usr-local-python' :
+        path => "/usr/local/bin/python${version_python_major}",
+        target => "/usr/bin/python${version_python_major}",
+        ensure => link,
+      }
+    }
+  }
+  
+  $venv_target_directory = '/usr/local/pythonenv/galaxy'
+  $command_bash_include_virtualenv = "\n# activate python virtualenv if present\nif [ -f ${venv_target_directory}/bin/activate ]; then\n        source ${venv_target_directory}/bin/activate\nfi\n"
+  
+  # setup galaxy virtual environment in /usr/local/pythonenv
+  file { 'python-venv-root' :
+    path => '/usr/local/pythonenv',
+    ensure => 'directory',
+    mode => 0755,
+    require => File['usr-local-python'],
+  }->
+  # download, expand and execute to install galaxy virtualenv (if alias doesn't exist), then install virtualenv in it
+  exec { 'python-venv-install-galaxy':
+    path    => '/usr/bin:/bin',
+    command => "bash -c 'wget --no-check-certificate https://pypi.python.org/packages/source/v/virtualenv/virtualenv-${version_virtualenv}.tar.gz -O /tmp/virtualenv-${version_virtualenv}.tar.gz && cd /tmp && tar -xzf virtualenv-${version_virtualenv}.tar.gz && /usr/local/bin/python2.7 virtualenv-${version_virtualenv}/virtualenv.py --no-site-packages --distribute ${venv_target_directory} && ${venv_target_directory}/bin/pip install virtualenv-${version_virtualenv}.tar.gz'",
+    onlyif  => "test ! -d ${$venv_target_directory}",
+  }->
+  # clean up as root if we've created a directory/file in /tmp
+  exec { 'python-venv-cleanup':
+    path    => '/usr/bin:/bin',
+    command => 'rm -rf /tmp/virtualenv-*',
+    onlyif  => "test -d /tmp/virtualenv-${version_virtualenv}",
+  }
+  
+  # include virtualenv in bashrc
+  concat::fragment { 'dopython-bashrc-virtualenv':
+    target  => "/home/${user}/.bashrc",
+    content => $command_bash_include_virtualenv,
+    # do just before colouring, because virtualenv messes with PS1
+    order   => '19',
+    require => [Exec['python-venv-install-galaxy']],
+  }
+
+  # if we're running SELinux
+  if (str2bool($::selinux)) {
+    # enable SELinux access to virtualenv directory
+    exec { 'python-venv-selinux-http':
+      path    => '/usr/sbin:/sbin:/bin',
+      command => "bash -c 'semanage fcontext --add --ftype -- --type httpd_sys_content_t \"${venv_target_directory}/lib/python2.7/site-packages(/.*)?\" && semanage fcontext --add --ftype -d --type httpd_sys_content_t \"${venv_target_directory}/lib/python2.7/site-packages(/.*)?\" && restorecon -vR  ${venv_target_directory}/lib/python2.7/site-packages'",
+      require => Exec['python-venv-install-galaxy'],
+    }
+  }
+
+}

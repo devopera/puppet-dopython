@@ -1,0 +1,8 @@
+<IfModule !wsgi_module>
+  # If mod_wsgi has NOT already been loaded, load it
+  LoadModule wsgi_module <%= scope.lookupvar('apache::params::lib_path') %>/mod_wsgi.so
+</IfModule>
+
+# configure WSGI irrespective of whether we loaded it
+WSGIPythonHome /usr/local/pythonenv/galaxy
+WSGISocketPrefix /var/run/wsgi
