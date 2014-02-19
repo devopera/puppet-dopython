@@ -6,8 +6,9 @@ class dopython (
 
   $user = 'web',
   
+  # default version is 2.7.6, alternate 3.3.4
   $version_python_major = '2.7',
-  $version_python_minor = '5',
+  $version_python_minor = '6',
   
   $version_virtualenv = '1.9.1',
 
