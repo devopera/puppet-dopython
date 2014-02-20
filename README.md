@@ -6,6 +6,10 @@ Python and mod_wsgi
 Changlog
 --------
 
+2014-02-20
+
+  * Adapted to python.org change, downloads now .tgz
+
 Usage
 -----
 
