@@ -55,7 +55,7 @@ class dopython (
         }->
         # consistent resource for later puppet requires
         file { 'usr-local-python' :
-          path => '/usr/local/bin/python2.7',
+          path => "/usr/local/bin/python${version_python_major}",
           ensure => present,
         }
       }
@@ -102,7 +102,7 @@ class dopython (
   # download, expand and execute to install galaxy virtualenv (if alias doesn't exist), then install virtualenv in it
   exec { 'python-venv-install-galaxy':
     path    => '/usr/bin:/bin',
-    command => "bash -c 'wget --no-check-certificate https://pypi.python.org/packages/source/v/virtualenv/virtualenv-${version_virtualenv}.tar.gz -O /tmp/virtualenv-${version_virtualenv}.tar.gz && cd /tmp && tar -xzf virtualenv-${version_virtualenv}.tar.gz && /usr/local/bin/python2.7 virtualenv-${version_virtualenv}/virtualenv.py --no-site-packages --distribute ${venv_target_directory} && ${venv_target_directory}/bin/pip install virtualenv-${version_virtualenv}.tar.gz'",
+    command => "bash -c 'wget --no-check-certificate https://pypi.python.org/packages/source/v/virtualenv/virtualenv-${version_virtualenv}.tar.gz -O /tmp/virtualenv-${version_virtualenv}.tar.gz && cd /tmp && tar -xzf virtualenv-${version_virtualenv}.tar.gz && /usr/local/bin/python${version_python_major} virtualenv-${version_virtualenv}/virtualenv.py --no-site-packages --distribute ${venv_target_directory} && ${venv_target_directory}/bin/pip install virtualenv-${version_virtualenv}.tar.gz'",
     onlyif  => "test ! -d ${$venv_target_directory}",
   }->
   # clean up as root if we've created a directory/file in /tmp
@@ -126,7 +126,7 @@ class dopython (
     # enable SELinux access to virtualenv directory
     exec { 'python-venv-selinux-http':
       path    => '/usr/sbin:/sbin:/bin',
-      command => "bash -c 'semanage fcontext --add --ftype -- --type httpd_sys_content_t \"${venv_target_directory}/lib/python2.7/site-packages(/.*)?\" && semanage fcontext --add --ftype -d --type httpd_sys_content_t \"${venv_target_directory}/lib/python2.7/site-packages(/.*)?\" && restorecon -vR  ${venv_target_directory}/lib/python2.7/site-packages'",
+      command => "bash -c 'semanage fcontext --add --ftype -- --type httpd_sys_content_t \"${venv_target_directory}/lib/python${version_python_major}/site-packages(/.*)?\" && semanage fcontext --add --ftype -d --type httpd_sys_content_t \"${venv_target_directory}/lib/python${version_python_major}/site-packages(/.*)?\" && restorecon -vR  ${venv_target_directory}/lib/python${version_python_major}/site-packages'",
       require => Exec['python-venv-install-galaxy'],
     }
   }
