@@ -32,6 +32,7 @@ class dopython (
           path    => '/usr/bin:/bin',
           command => "bash -c 'wget http://www.python.org/ftp/python/${python_combined_version}/Python-${python_combined_version}.tgz -O /tmp/Python-${python_combined_version}.tgz && cd /tmp && tar -xf Python-${python_combined_version}.tgz && cd Python-${python_combined_version} && ./configure --prefix=/usr/local --enable-shared && make && make altinstall'",
           creates => "/tmp/Python-${python_combined_version}",
+          timeout => 1800,
           onlyif  => "test ! -e /usr/local/bin/python${version_python_major}",
         }->
         # clean up (if we've created a directory/file in /tmp)
