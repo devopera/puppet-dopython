@@ -129,6 +129,13 @@ class dopython (
       path    => '/usr/sbin:/sbin:/bin',
       command => "bash -c 'semanage fcontext --add --ftype -- --type httpd_sys_content_t \"${venv_target_directory}/lib/python${version_python_major}/site-packages(/.*)?\" && semanage fcontext --add --ftype -d --type httpd_sys_content_t \"${venv_target_directory}/lib/python${version_python_major}/site-packages(/.*)?\" && restorecon -vR  ${venv_target_directory}/lib/python${version_python_major}/site-packages'",
       require => Exec['python-venv-install-galaxy'],
+    }->
+    # allow tmp exec to avoid memory error (https://bugzilla.redhat.com/show_bug.cgi?id=717404)
+    # without having to hack /usr/local/lib/python2.7/ctypes/__init__.py (http://stackoverflow.com/questions/5914673/python-ctypes-memoryerror-in-fcgi-process-from-pil-library)
+    # setsebool -P httpd_tmp_exec 1
+    exec { 'python-memerr-selinux-http':
+      path    => '/usr/sbin:/sbin:/bin',
+      command => 'setsebool -P httpd_tmp_exec 1',
     }
   }
 
