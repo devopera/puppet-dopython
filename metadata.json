@@ -1,0 +1,14 @@
+{
+  "name": "devopera-dopython",
+  "version": "0.9.0",
+  "author": "(c) Alex Stanhope, Devopera.com",
+  "summary": "Python and mod_wsgi installation and configuration module",
+  "license": "Apache License, Version 2.0",
+  "source": "https://github.com/devopera/puppet-dopython",
+  "description": "",
+  "project_page": "http://devopera.com/module/dopython",
+  "issues_url": "https://github.com/devopera/puppet-dopython/issues",
+  "dependencies": [
+  
+  ]
+}
