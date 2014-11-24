@@ -6,7 +6,7 @@ class dopython::wsgi (
 
   $user = 'web',
   
-  $version_mod_wsgi = '3.4',
+  $version_mod_wsgi = '3.5',
   $version_python_major = '2.7',
 
   # end of class arguments
@@ -31,7 +31,7 @@ class dopython::wsgi (
         # compile mod_wsgi from source
         exec { 'modwsgi-install-compile':
           path    => '/usr/bin:/bin',
-          command => "bash -c 'wget http://modwsgi.googlecode.com/files/mod_wsgi-${version_mod_wsgi}.tar.gz -O /tmp/mod_wsgi-${version_mod_wsgi}.tar.gz && cd /tmp && tar -xf mod_wsgi-${version_mod_wsgi}.tar.gz && cd mod_wsgi-${version_mod_wsgi} && ./configure --with-python=/usr/local/bin/python${version_python_major} && make && make install'",
+          command => "bash -c 'wget https://github.com/GrahamDumpleton/mod_wsgi/archive/${version_mod_wsgi}.tar.gz -O /tmp/mod_wsgi-${version_mod_wsgi}.tar.gz && cd /tmp && tar -xf mod_wsgi-${version_mod_wsgi}.tar.gz && cd mod_wsgi-${version_mod_wsgi} && ./configure --with-python=/usr/local/bin/python${version_python_major} && make && make install'",
           creates => "/tmp/mod_wsgi-${version_mod_wsgi}",
           require => [Package['httpd-devel'], File['usr-local-python']],
           onlyif  => "test ! -e /usr/lib64/httpd/modules/mod_wsgi.so",
