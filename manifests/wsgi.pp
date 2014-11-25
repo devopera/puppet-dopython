@@ -54,7 +54,7 @@ class dopython::wsgi (
       package { 'mod_wsgi_package':
         ensure  => 'present',
         name    => $apache::params::mod_packages['wsgi'],
-        require => Package['zend-web-pack'],
+        require => Anchor['doapache-package'],
         before  => File['mod_wsgi-vhost'],
       }
     }
