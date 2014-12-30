@@ -17,6 +17,7 @@ class dopython::wsgi (
 
   # fetch apache params
   include apache::params
+  include doapache::params
 
   # install python and mod_wsgi
   case $operatingsystem {
@@ -62,7 +63,7 @@ class dopython::wsgi (
 
   # create vhost that loads mod_wsgi, before anything that might require it
   file { 'mod_wsgi-vhost' :
-    name => "${apache::params::confd_dir}/00_wsgi.conf",
+    name => "/etc/${apache::params::apache_name}/${doapache::params::confd_name}/00_wsgi.conf",
     content => template('dopython/wsgi.conf.erb'),
     ensure => 'present',
     owner => 'root',
