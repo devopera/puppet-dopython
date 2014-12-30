@@ -6,6 +6,10 @@ Python and mod_wsgi
 Changlog
 --------
 
+2014-12-30
+
+  * Added Ubuntu 14.04 support
+
 2014-02-20
 
   * Adapted to python.org change, downloads now .tgz
@@ -16,7 +20,7 @@ Usage
 Operating System support
 ------------------------
 
-Tested with CentOS 6 and Ubuntu 12.04
+Tested with CentOS 6, Ubuntu 12.04, Ubuntu 14.04
 
 Copyright and License
 ---------------------
