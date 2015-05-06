@@ -6,6 +6,10 @@ Python and mod_wsgi
 Changlog
 --------
 
+2015-05-06
+
+  * Updated from 2.7.6 to 2.7.9
+
 2014-12-30
 
   * Added Ubuntu 14.04 support
