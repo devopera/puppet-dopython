@@ -22,7 +22,7 @@ class dopython::wsgi (
   # install python and mod_wsgi
   case $operatingsystem {
     centos, redhat, fedora: {
-      if ($operatingsystemrelease < 7.0) {
+      if ($::operatingsystemmajrelease < 7) {
         # mod_wsgi build pre-requisites: httpd-devel for Apache extension tool (apxs)
         if ! defined( Package['httpd-devel'] ) {
           package { 'httpd-devel' :
@@ -42,6 +42,13 @@ class dopython::wsgi (
           path    => '/usr/bin:/bin',
           command => 'rm -rf /tmp/mod_wsgi-*',
           onlyif  => "test -d /tmp/mod_wsgi-${version_mod_wsgi}",
+          before  => File['mod_wsgi-vhost'],
+        }
+      } else {
+        package { 'mod_wsgi_package':
+          ensure  => 'present',
+          name    => $apache::params::mod_packages['wsgi'],
+          require => Anchor['doapache-package'],
           before  => File['mod_wsgi-vhost'],
         }
       }

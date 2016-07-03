@@ -21,7 +21,7 @@ class dopython (
   # install python
   case $operatingsystem {
     centos, redhat: {
-      if ($operatingsystemrelease < 7.0) {
+      if ($::operatingsystemmajrelease < 7) {
         # compile python from source
         $python_combined_version = "${version_python_major}.${version_python_minor}"
         exec { 'python-install-prereqs':
@@ -53,11 +53,18 @@ class dopython (
         exec { 'python-ldconfig':
           path => '/sbin:/usr/bin:/bin',
           command => "bash -c 'ldconfig'",
-        }->
+          before => File['usr-local-python'],
+        }
         # consistent resource for later puppet requires
         file { 'usr-local-python' :
           path => "/usr/local/bin/python${version_python_major}",
           ensure => present,
+        }
+      } else {
+        file { 'usr-local-python' :
+          path => "/usr/local/bin/python${version_python_major}",
+          target => "/usr/bin/python${version_python_major}",
+          ensure => link,
         }
       }
     }
@@ -127,7 +134,9 @@ class dopython (
     # enable SELinux access to virtualenv directory
     exec { 'python-venv-selinux-http':
       path    => '/usr/sbin:/sbin:/bin',
-      command => "bash -c 'semanage fcontext --add --ftype -- --type httpd_sys_content_t \"${venv_target_directory}/lib/python${version_python_major}/site-packages(/.*)?\" && semanage fcontext --add --ftype -d --type httpd_sys_content_t \"${venv_target_directory}/lib/python${version_python_major}/site-packages(/.*)?\" && restorecon -vR  ${venv_target_directory}/lib/python${version_python_major}/site-packages'",
+      # testing a simpler version of this command
+      # command => "bash -c 'semanage fcontext --add --ftype -- --type httpd_sys_content_t \"${venv_target_directory}/lib/python${version_python_major}/site-packages(/.*)?\" && semanage fcontext --add --ftype -d --type httpd_sys_content_t \"${venv_target_directory}/lib/python${version_python_major}/site-packages(/.*)?\" && restorecon -vR  ${venv_target_directory}/lib/python${version_python_major}/site-packages'",
+      command => "bash -c 'semanage fcontext -a -t httpd_sys_content_t \"${venv_target_directory}/lib/python${version_python_major}/site-packages(/.*)?\" && semanage fcontext -a -t httpd_sys_content_t \"${venv_target_directory}/lib/python${version_python_major}/site-packages(/.*)?\" && restorecon -vR  ${venv_target_directory}/lib/python${version_python_major}/site-packages'",
       require => Exec['python-venv-install-galaxy'],
     }->
     # allow tmp exec to avoid memory error (https://bugzilla.redhat.com/show_bug.cgi?id=717404)
