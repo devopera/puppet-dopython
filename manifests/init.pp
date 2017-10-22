@@ -6,17 +6,18 @@ class dopython (
 
   $user = 'web',
   
-  # default version is 2.7.9, alternate 3.3.4
-  $version_python_major = '2.7',
-  $version_python_minor = '10',
+  # default version is 2.7.13, alternates 3.3.7, 3.4.7 (not yet 3.5.4, 3.6.2)
+  $version_python_major = $dopython::params::version_python_major,
+  $version_python_minor = $dopython::params::version_python_minor,
   
-  $version_virtualenv = '1.9.1',
+  # default version is 1.9.1, alternate 13.1.2
+  $version_virtualenv = $dopython::params::version_virtualenv,
 
   # end of class arguments
   # ----------------------
   # begin class
 
-) {
+) inherits dopython::params {
 
   # install python
   case $operatingsystem {
@@ -61,6 +62,13 @@ class dopython (
           ensure => present,
         }
       } else {
+        $version_python_major_dotless = regsubst($version_python_major, '\.', '', 'G')
+        package { 'python-install-prereqs' :
+          name => 'python-devel',
+          ensure => 'present',
+        }->
+        package { "python${version_python_major_dotless}" : }->
+        # create local alias for consistency
         file { 'usr-local-python' :
           path => "/usr/local/bin/python${version_python_major}",
           target => "/usr/bin/python${version_python_major}",
@@ -118,7 +126,8 @@ class dopython (
     path    => '/usr/bin:/bin',
     command => 'rm -rf /tmp/virtualenv-*',
     onlyif  => "test -d /tmp/virtualenv-${version_virtualenv}",
-  }
+  }->
+  anchor { 'python-venv' : }
   
   # include virtualenv in bashrc
   concat::fragment { 'dopython-bashrc-virtualenv':
