@@ -67,7 +67,7 @@ class dopython (
           name => 'python-devel',
           ensure => 'present',
         }->
-        package { "python${version_python_major_dotless}" : }->
+        package { ["python${version_python_major_dotless}", "python${version_python_major_dotless}-devel"] : }->
         # create local alias for consistency
         file { 'usr-local-python' :
           path => "/usr/local/bin/python${version_python_major}",
