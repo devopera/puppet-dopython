@@ -138,6 +138,14 @@ class dopython (
     require => [Exec['python-venv-install-galaxy']],
   }
 
+  # many pip installs require gcc builds
+  if ! defined(Package['gcc']) {
+    package { 'gcc' : ensure => present }
+  }
+
+  # upgrade pip using pipinstall (which includes --upgrade)
+  dopython::pipinstall { ['pip']: }
+
   # if we're running SELinux
   if (str2bool($::selinux)) {
     # enable SELinux access to virtualenv directory
