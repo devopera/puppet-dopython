@@ -5,7 +5,7 @@ define dopython::pipinstall(
 ) {
     exec { "dopython-pipinstall-${title}" :
       path => '/bin:/usr/bin:/sbin:/usr/sbin',
-      command => "bash -c \"source /usr/local/pythonenv/galaxy/bin/activate && pip install --quiet ${packagename}\"",
+      command => "bash -c \"source /usr/local/pythonenv/galaxy/bin/activate && pip install --quiet ${packagename}\" --upgrade",
       require => [Anchor['python-venv']],
     }
 }
