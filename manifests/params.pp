@@ -4,9 +4,9 @@ class dopython::params {
     centos, redhat, fedora: {
       case $::operatingsystemmajrelease {
         '7', default: {
-          $version_python_major = '3.4'
-          $version_python_minor = '7'
-          $version_virtualenv = '13.1.2'
+          $version_python_major = '3.6'
+          $version_python_minor = '8'
+          $version_virtualenv = '16.2.0'
         }
         '6': {
           $version_python_major = '2.7'
