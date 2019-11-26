@@ -6,7 +6,7 @@ class dopython (
 
   $user = 'web',
   
-  # default version is 2.7.13, alternates 3.3.7, 3.4.7 (not yet 3.5.4, 3.6.2)
+  $version_python_package = $dopython::params::version_python_package,
   $version_python_major = $dopython::params::version_python_major,
   $version_python_minor = $dopython::params::version_python_minor,
   
@@ -26,7 +26,7 @@ class dopython (
         # compile python from source
         $python_combined_version = "${version_python_major}.${version_python_minor}"
         exec { 'python-install-prereqs':
-          command => '/usr/bin/yum install -y "@Development tools" zlib-devel bzip2-devel openssl-devel ncurses-devel python-devel sqlite-devel',
+          command => '/usr/bin/yum install -y "@Development tools" zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel',
         }->
         # fetch, expand and compile, if alias doesn't exist
         exec { 'python-install-compile':
@@ -62,26 +62,26 @@ class dopython (
           ensure => present,
         }
       } else {
-        $version_python_major_dotless = regsubst($version_python_major, '\.', '', 'G')
-        package { 'python-install-prereqs' :
-          name => 'python-devel',
-          ensure => 'present',
-        }->
-        package { ["python${version_python_major_dotless}", "python${version_python_major_dotless}-devel"] : }->
+        #$version_python_major_dotless = regsubst($version_python_major, '\.', '', 'G')
+        #package { 'python-install-prereqs' :
+        #  name => 'python-devel',
+        #  ensure => 'present',
+        #}->
+        package { ["python${version_python_package}", "python${version_python_package}-devel"] : }->
         # create local alias for consistency
         file { 'usr-local-python' :
           path => "/usr/local/bin/python${version_python_major}",
-          target => "/usr/bin/python${version_python_major}",
+          target => "/usr/bin/python${version_python_package}",
           ensure => link,
         }
       }
     }
     fedora: {
       # install python
-      package { 'python-install-prereqs' :
-        name => 'python-devel',
-        ensure => 'present',
-      }->
+      #package { 'python-install-prereqs' :
+      #  name => 'python-devel',
+      #  ensure => 'present',
+      #}->
       # create local alias for consistency
       file { 'usr-local-python' :
         path => "/usr/local/bin/python${version_python_major}",
@@ -91,10 +91,10 @@ class dopython (
     }
     ubuntu, debian: {
       # install python
-      package { 'python-install-prereqs' :
-        name => 'python-dev',
-        ensure => 'present',
-      }->
+      #package { 'python-install-prereqs' :
+      #  name => 'python-dev',
+      #  ensure => 'present',
+      #}->
       package { "python${version_python_major}" : }->
       # create local alias for consistency
       file { 'usr-local-python' :

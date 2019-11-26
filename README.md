@@ -6,6 +6,10 @@ Python and mod_wsgi
 Changlog
 --------
 
+2019-11-26
+
+  * Fixed for new RHEL package naming
+
 2015-05-06
 
   * Updated from 2.7.6 to 2.7.9
@@ -24,7 +28,7 @@ Usage
 Operating System support
 ------------------------
 
-Tested with CentOS 6, Ubuntu 12.04, Ubuntu 14.04
+Tested with CentOS 6/7, Ubuntu 12.04/14.04
 
 Copyright and License
 ---------------------
